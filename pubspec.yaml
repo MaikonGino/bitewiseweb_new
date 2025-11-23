@@ -1,0 +1,32 @@
+name: bitewise_front
+description: "BiteWise Frontend"
+publish_to: 'none'
+
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.5.0 # Ajustei para uma versão compatível com a maioria dos plugins atuais
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # Ícones padrão do iOS
+  cupertino_icons: ^1.0.8
+
+  # --- SUAS DEPENDÊNCIAS NOVAS ---
+  google_fonts: ^6.1.0      # Para a fonte Poppins (Identidade Visual)
+  lottie: ^3.1.0            # Para as animações "Uau" que você pediu
+  dio: ^5.4.0               # Para conectar o Front com o seu Backend Java
+  flutter_animate: ^4.5.0   # Para animações suaves de entrada (UX moderno)
+  provider: ^6.1.1          # Para gerenciar o estado do app de forma simples
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^4.0.0
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/images/
