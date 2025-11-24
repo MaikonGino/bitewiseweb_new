@@ -1,0 +1,35 @@
+{
+  "name": "BiteWise",
+  "short_name": "BiteWise",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#FFF8E1",
+  "theme_color": "#D35400",
+  "description": "Encontre receitas perfeitas com os ingredientes da sua geladeira.",
+  "orientation": "portrait-primary",
+  "prefer_related_applications": false,
+  "icons": [
+    {
+      "src": "logo.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "logo.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    },
+    {
+      "src": "logo.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "logo.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}
