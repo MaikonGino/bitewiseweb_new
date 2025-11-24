@@ -1,38 +1,51 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <!--
-    If you are serving your web app in a path other than the root, change the
-    href value below to reflect the base path you are serving from.
+    <base href="$FLUTTER_BASE_HREF">
+    <meta charset="UTF-8">
+    <meta content="IE=Edge" http-equiv="X-UA-Compatible">
+    <meta name="description" content="BiteWise">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta name="apple-mobile-web-app-title" content="BiteWise">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://maikongino.github.io/bitewiseweb_new/">
+    <meta property="og:title" content="BiteWise - Cozinha Inteligente">
+    <meta property="og:description" content="Descubra receitas incríveis com o que você tem em casa. Evite desperdícios e economize.">
 
-    The path provided below has to start and end with a slash "/" in order for
-    it to work correctly.
+    <meta property="og:image" content="https://maikongino.github.io/bitewiseweb_new/logo.png">
 
-    For more details:
-    * https://developer.mozilla.org/en-US/docs/Web/HTML/Element/base
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="BiteWise">
+    <meta name="twitter:description" content="Descubra receitas incríveis com o que você tem em casa.">
 
-    This is a placeholder for base href that will be replaced by the value of
-    the `--base-href` argument provided to `flutter build`.
-  -->
-  <base href="$FLUTTER_BASE_HREF">
+    <meta name="twitter:image" content="https://maikongino.github.io/bitewiseweb_new/logo.png">
 
-  <meta charset="UTF-8">
-  <meta content="IE=Edge" http-equiv="X-UA-Compatible">
-  <meta name="description" content="BiteWise Frontend">
+    <title>BiteWise</title>
+    <link rel="manifest" href="manifest.json">
 
-  <!-- iOS meta tags & icons -->
-  <meta name="mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black">
-  <meta name="apple-mobile-web-app-title" content="bitewise_front">
-  <link rel="apple-touch-icon" href="icons/Icon-192.png">
+    <link rel="icon" type="image/png" href="logo.png" />
 
-  <!-- Favicon -->
-  <link rel="icon" type="image/png" href="favicon.png"/>
-
-  <title>bitewise_front</title>
-  <link rel="manifest" href="manifest.json">
+    <script>
+        var serviceWorkerVersion = null;
+    </script>
+    <script src="flutter.js" defer></script>
 </head>
 <body>
-  <script src="flutter_bootstrap.js" async></script>
+<script>
+    window.addEventListener('load', function(ev) {
+        // Método clássico de inicialização
+        _flutter.loader.loadEntrypoint({
+            serviceWorker: {
+                serviceWorkerVersion: serviceWorkerVersion,
+            },
+            onEntrypointLoaded: function(engineInitializer) {
+                engineInitializer.initializeEngine().then(function(appRunner) {
+                    appRunner.runApp();
+                });
+            }
+        });
+    });
+</script>
 </body>
 </html>

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lottie/lottie.dart';
-import '../../main.dart'; // Acesso ao themeNotifier
+import '../../global_state.dart';
 import 'home_screen.dart';
 
 class OnboardingScreen extends StatefulWidget {

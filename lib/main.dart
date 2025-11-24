@@ -1,27 +1,11 @@
 import 'package:flutter/material.dart';
 import 'theme.dart';
-import 'screens/onboarding_screen.dart'; // Começa pelo tutorial
+import 'global_state.dart'; // Importa o arquivo novo
+import 'screens/onboarding_screen.dart';
 
 void main() {
   runApp(const BiteWiseApp());
 }
-
-// --- GERENCIADORES GLOBAIS ---
-class ThemeNotifier extends ValueNotifier<ThemeMode> {
-  ThemeNotifier() : super(ThemeMode.light);
-  void toggleTheme() {
-    value = value == ThemeMode.light ? ThemeMode.dark : ThemeMode.light;
-  }
-}
-final themeNotifier = ThemeNotifier();
-
-class AuthNotifier extends ValueNotifier<bool> {
-  AuthNotifier() : super(false);
-
-  void login() => value = true;
-  void logout() => value = false;
-}
-final authNotifier = AuthNotifier();
 
 class BiteWiseApp extends StatelessWidget {
   const BiteWiseApp({super.key});
@@ -31,19 +15,13 @@ class BiteWiseApp extends StatelessWidget {
     return ValueListenableBuilder<ThemeMode>(
       valueListenable: themeNotifier,
       builder: (context, currentMode, child) {
-        return ValueListenableBuilder<bool>(
-          valueListenable: authNotifier,
-          builder: (context, isLoggedIn, child) {
-            return MaterialApp(
-              title: 'BiteWise',
-              debugShowCheckedModeBanner: false,
-              theme: buildLightTheme(),
-              darkTheme: buildDarkTheme(),
-              themeMode: currentMode,
-              // AGORA COMEÇA PELO ONBOARDING
-              home: const OnboardingScreen(),
-            );
-          },
+        return MaterialApp(
+          title: 'BiteWise',
+          debugShowCheckedModeBanner: false,
+          theme: buildLightTheme(),
+          darkTheme: buildDarkTheme(),
+          themeMode: currentMode,
+          home: const OnboardingScreen(),
         );
       },
     );

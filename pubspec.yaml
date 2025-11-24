@@ -5,21 +5,24 @@ publish_to: 'none'
 version: 1.0.0+1
 
 environment:
-  sdk: ^3.5.0 # Ajustei para uma versão compatível com a maioria dos plugins atuais
+  sdk: ^3.5.0
 
 dependencies:
   flutter:
     sdk: flutter
 
-  # Ícones padrão do iOS
+  # Ícones
   cupertino_icons: ^1.0.8
 
-  # --- SUAS DEPENDÊNCIAS NOVAS ---
-  google_fonts: ^6.1.0      # Para a fonte Poppins (Identidade Visual)
-  lottie: ^3.1.0            # Para as animações "Uau" que você pediu
-  dio: ^5.4.0               # Para conectar o Front com o seu Backend Java
-  flutter_animate: ^4.5.0   # Para animações suaves de entrada (UX moderno)
-  provider: ^6.1.1          # Para gerenciar o estado do app de forma simples
+  # Fonts e UI
+  google_fonts: ^6.1.0
+  flutter_animate: ^4.5.0
+  lottie: ^3.1.0
+
+  # Funcionalidades
+  url_launcher: ^6.2.5
+  dio: ^5.4.0
+  provider: ^6.1.1
 
 dev_dependencies:
   flutter_test:
@@ -28,5 +31,7 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+
   assets:
     - assets/images/
+    - assets/anim/
