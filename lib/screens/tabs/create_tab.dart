@@ -2,10 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lottie/lottie.dart';
 import '../../theme.dart';
-import '../../main.dart'; // Acesso aos notifiers e global state
-import '../../global_state.dart'; // Para PreferencesState se necessário
+import '../../main.dart';
+import '../../global_state.dart';
 import '../recipe_result_screen.dart';
 import '../plans_screen.dart';
+import '../about_modal.dart';
 
 class CreateTab extends StatefulWidget {
   const CreateTab({super.key});
@@ -18,29 +19,71 @@ class _CreateTabState extends State<CreateTab> {
   final TextEditingController _ingredientController = TextEditingController();
   final List<String> _ingredients = [];
 
+  // --- 1. BANCO DE DADOS ROBUSTO (Muitas opções para nunca ficar vazio) ---
   final List<Map<String, dynamic>> _allIngredientsDb = [
-    {"name": "Arroz", "category": "Básicos", "tags": ["carb", "vegan", "gluten_free"]},
-    {"name": "Feijão", "category": "Básicos", "tags": ["carb", "vegan", "gluten_free", "protein"]},
-    {"name": "Ovo", "category": "Básicos", "tags": ["protein", "animal", "gluten_free", "low_carb"]},
-    {"name": "Frango", "category": "Proteínas", "tags": ["protein", "animal", "meat", "gluten_free", "low_carb"]},
-    {"name": "Tofu", "category": "Proteínas", "tags": ["protein", "vegan", "gluten_free", "low_carb"]},
-    {"name": "Tomate", "category": "Vegetais", "tags": ["vegan", "gluten_free", "low_carb"]},
-    {"name": "Cenoura", "category": "Vegetais", "tags": ["vegan", "gluten_free", "carb"]},
+    // Básicos
+    {"name": "Arroz", "cat": "Básicos", "tags": ["carb", "vegan", "gf"]},
+    {"name": "Feijão", "cat": "Básicos", "tags": ["carb", "vegan", "gf", "protein"]},
+    {"name": "Ovo", "cat": "Básicos", "tags": ["protein", "animal", "gf", "keto", "low_carb"]},
+    {"name": "Macarrão", "cat": "Básicos", "tags": ["carb", "vegan"]},
+    {"name": "Pão", "cat": "Básicos", "tags": ["carb", "vegan"]},
+    {"name": "Tapioca", "cat": "Básicos", "tags": ["carb", "vegan", "gf", "paleo"]},
+    {"name": "Cuscuz", "cat": "Básicos", "tags": ["carb", "vegan", "gf"]},
+    {"name": "Aveia", "cat": "Básicos", "tags": ["carb", "vegan"]},
+    {"name": "Queijo", "cat": "Básicos", "tags": ["protein", "fat", "animal", "gf", "keto", "low_carb"]},
+    {"name": "Azeite", "cat": "Básicos", "tags": ["fat", "vegan", "gf", "keto", "low_carb", "paleo"]},
+    {"name": "Manteiga", "cat": "Básicos", "tags": ["fat", "animal", "gf", "keto", "low_carb", "paleo"]},
+
+    // Proteínas
+    {"name": "Frango", "cat": "Proteínas", "tags": ["protein", "animal", "meat", "gf", "keto", "low_carb", "paleo"]},
+    {"name": "Carne Moída", "cat": "Proteínas", "tags": ["protein", "animal", "meat", "gf", "keto", "low_carb", "paleo"]},
+    {"name": "Bife", "cat": "Proteínas", "tags": ["protein", "animal", "meat", "gf", "keto", "low_carb", "paleo"]},
+    {"name": "Peixe", "cat": "Proteínas", "tags": ["protein", "animal", "meat", "gf", "keto", "low_carb", "paleo"]},
+    {"name": "Bacon", "cat": "Proteínas", "tags": ["protein", "fat", "animal", "meat", "gf", "keto", "low_carb", "paleo"]},
+    {"name": "Atum", "cat": "Proteínas", "tags": ["protein", "animal", "meat", "gf", "keto", "low_carb", "paleo"]},
+    {"name": "Tofu", "cat": "Proteínas", "tags": ["protein", "vegan", "gf", "keto", "low_carb"]},
+    {"name": "Grão de Bico", "cat": "Proteínas", "tags": ["protein", "vegan", "gf", "carb"]},
+    {"name": "Lentilha", "cat": "Proteínas", "tags": ["protein", "vegan", "gf", "carb"]},
+    {"name": "Soja", "cat": "Proteínas", "tags": ["protein", "vegan", "gf", "low_carb"]},
+
+    // Vegetais
+    {"name": "Tomate", "cat": "Vegetais", "tags": ["vegan", "gf", "low_carb", "keto", "paleo"]},
+    {"name": "Cenoura", "cat": "Vegetais", "tags": ["vegan", "gf", "carb", "paleo"]},
+    {"name": "Batata", "cat": "Vegetais", "tags": ["vegan", "gf", "carb", "paleo"]},
+    {"name": "Cebola", "cat": "Vegetais", "tags": ["vegan", "gf", "low_carb", "paleo"]},
+    {"name": "Brócolis", "cat": "Vegetais", "tags": ["vegan", "gf", "low_carb", "keto", "paleo"]},
+    {"name": "Couve-flor", "cat": "Vegetais", "tags": ["vegan", "gf", "low_carb", "keto", "paleo"]},
+    {"name": "Abobrinha", "cat": "Vegetais", "tags": ["vegan", "gf", "low_carb", "keto", "paleo"]},
+    {"name": "Espinafre", "cat": "Vegetais", "tags": ["vegan", "gf", "low_carb", "keto", "paleo"]},
+    {"name": "Pimentão", "cat": "Vegetais", "tags": ["vegan", "gf", "low_carb", "keto", "paleo"]},
+    {"name": "Abóbora", "cat": "Vegetais", "tags": ["vegan", "gf", "carb", "paleo"]},
   ];
 
+  // --- LÓGICA DE FILTRAGEM ---
   Map<String, List<String>> _getSmartSuggestions(Set<String> filters) {
     Map<String, List<String>> result = {"Básicos": [], "Proteínas": [], "Vegetais": []};
+
     for (var item in _allIngredientsDb) {
       bool isAllowed = true;
-      if (filters.contains("Vegano") && item['tags'].contains("animal")) isAllowed = false;
-      if (filters.contains("Vegetariano") && item['tags'].contains("meat")) isAllowed = false;
-      if (filters.contains("Sem Glúten") && item['tags'].contains("gluten")) isAllowed = false;
-      if (filters.contains("Low Carb") && item['tags'].contains("carb") && !item['tags'].contains("low_carb")) isAllowed = false;
+      final tags = item['tags'] as List;
 
-      if (isAllowed) result[item['category']]!.add(item['name']);
+      // Filtros
+      if (filters.contains("Vegano") && tags.contains("animal")) isAllowed = false;
+      if (filters.contains("Vegetariano") && tags.contains("meat")) isAllowed = false;
+      if (filters.contains("Sem Glúten") && !tags.contains("gf")) isAllowed = false;
+      if (filters.contains("Sem Lactose") && (item['name'] == "Queijo" || item['name'] == "Manteiga" || item['name'] == "Iogurte")) isAllowed = false;
+      if (filters.contains("Low Carb") && tags.contains("carb") && !tags.contains("low_carb")) isAllowed = false;
+
+      if (isAllowed) {
+        result[item['cat']]!.add(item['name']);
+      }
     }
-    // Garante que não fique vazio
-    if(result["Básicos"]!.isEmpty) result["Básicos"] = ["Água", "Sal", "Azeite"];
+
+    // Garante que mostre no máximo 8 itens para não poluir, mas mantém a variedade
+    result.forEach((key, list) {
+      if (list.length > 10) result[key] = list.sublist(0, 10);
+    });
+
     return result;
   }
 
@@ -99,20 +142,84 @@ class _CreateTabState extends State<CreateTab> {
     }
   }
 
+  // --- 2. MODAL DE DOWNLOAD INTELIGENTE (Lógica Desktop vs Mobile Restaurada) ---
   void _showDownloadModal(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
+    final isDesktop = MediaQuery.of(context).size.width > 600; // Lógica para saber onde está
+
     showModalBottomSheet(
-      context: context, backgroundColor: Colors.transparent,
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
       builder: (context) => Container(
         padding: const EdgeInsets.all(32),
-        decoration: BoxDecoration(color: cs.surface, borderRadius: const BorderRadius.vertical(top: Radius.circular(32))),
-        child: Column(mainAxisSize: MainAxisSize.min, children: [
-          Image.asset('assets/images/logo.png', height: 60),
-          const SizedBox(height: 24),
-          Text("Baixe o App Android", style: GoogleFonts.poppins(fontSize: 22, fontWeight: FontWeight.bold, color: cs.onSurface)),
-          const SizedBox(height: 32),
-          SizedBox(width: double.infinity, child: ElevatedButton(onPressed: () => Navigator.pop(context), style: ElevatedButton.styleFrom(backgroundColor: Colors.grey[300], foregroundColor: Colors.black87), child: const Text("FECHAR")))
-        ]),
+        decoration: BoxDecoration(
+            color: cs.surface,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(32))
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Ícone Mobile
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: AppColors.terracotta.withOpacity(0.1),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(Icons.install_mobile, size: 48, color: AppColors.terracotta),
+            ),
+            const SizedBox(height: 24),
+
+            Text(
+              "Leve o BiteWise no bolso",
+              style: GoogleFonts.poppins(fontSize: 22, fontWeight: FontWeight.bold, color: cs.onSurface),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 12),
+
+            // UX WRITING: Texto muda se for PC ou Celular
+            Text(
+              isDesktop
+                  ? "Para instalar o aplicativo Android, acesse este site diretamente pelo navegador do seu celular."
+                  : "Instale o aplicativo oficial para Android e tenha suas receitas sempre à mão.",
+              textAlign: TextAlign.center,
+              style: GoogleFonts.poppins(color: Colors.grey, height: 1.5, fontSize: 15),
+            ),
+
+            const SizedBox(height: 32),
+
+            // BOTÃO DINÂMICO
+            if (isDesktop)
+            // Desktop: Botão "Entendi" (apenas fecha)
+              SizedBox(
+                  width: double.infinity,
+                  child: TextButton(
+                      onPressed: () => Navigator.pop(context),
+                      child: Text("ENTENDI", style: GoogleFonts.poppins(fontWeight: FontWeight.bold, color: AppColors.terracotta))
+                  )
+              )
+            else
+            // Mobile: Botão "Baixar Agora" (Simulação de Download)
+              SizedBox(
+                width: double.infinity,
+                height: 56,
+                child: ElevatedButton.icon(
+                    onPressed: () {
+                      Navigator.pop(context);
+                      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Iniciando download...")));
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.terracotta,
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                    ),
+                    icon: const Icon(Icons.download),
+                    label: const Text("BAIXAR AGORA")
+                ),
+              )
+          ],
+        ),
       ),
     );
   }
@@ -133,7 +240,7 @@ class _CreateTabState extends State<CreateTab> {
               child: ListView(
                 padding: const EdgeInsets.fromLTRB(24, 24, 24, 100),
                 children: [
-                  // --- BANNER ---
+                  // --- Banner ---
                   Container(
                     padding: const EdgeInsets.all(24),
                     decoration: BoxDecoration(
@@ -147,7 +254,9 @@ class _CreateTabState extends State<CreateTab> {
                         Text("Olá, Chef! 👨‍🍳", style: GoogleFonts.poppins(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white)),
                         const SizedBox(height: 8),
                         Text(
-                            prefs.dietFilters.isEmpty ? "Digite o que você tem e nós criamos a mágica." : "Modo ${prefs.dietFilters.join(' + ')} ativado.",
+                            prefs.dietFilters.isEmpty
+                                ? "Digite o que você tem e nós criamos a mágica."
+                                : "Modo ${prefs.dietFilters.join(' + ')} ativado.",
                             style: GoogleFonts.poppins(color: Colors.white.withOpacity(0.9))
                         ),
                       ],
@@ -156,7 +265,7 @@ class _CreateTabState extends State<CreateTab> {
 
                   const SizedBox(height: 32),
 
-                  // --- SELETOR IA ---
+                  // --- Seletor IA ---
                   Text("Escolha sua IA", style: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.w600, color: Colors.grey[600])),
                   const SizedBox(height: 12),
                   Container(
@@ -187,7 +296,7 @@ class _CreateTabState extends State<CreateTab> {
 
                   const SizedBox(height: 32),
 
-                  // --- INPUT ---
+                  // --- Input ---
                   Text("Seus Ingredientes", style: GoogleFonts.poppins(fontSize: 18, fontWeight: FontWeight.bold, color: cs.onSurface)),
                   const SizedBox(height: 12),
                   TextField(
@@ -195,7 +304,7 @@ class _CreateTabState extends State<CreateTab> {
                     onSubmitted: (val) => _addIngredient(val),
                     style: TextStyle(color: cs.onSurface),
                     decoration: InputDecoration(
-                      hintText: "Ex: Ovo, Leite, Farinha...",
+                      hintText: "Ex: ${smartSuggestions['Proteínas']?.first ?? '...'}, ${smartSuggestions['Vegetais']?.first ?? '...'}...",
                       prefixIcon: const Icon(Icons.add_circle, color: AppColors.terracotta),
                       suffixIcon: IconButton(icon: const Icon(Icons.arrow_forward), onPressed: () => _addIngredient(_ingredientController.text)),
                     ),
@@ -208,12 +317,12 @@ class _CreateTabState extends State<CreateTab> {
 
                   const SizedBox(height: 32),
 
-                  // --- SUGESTÕES INTELIGENTES ---
+                  // --- Sugestões (CATEGORIZADAS E PREENCHIDAS) ---
                   if (_ingredients.length < 3) ...[
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text("Sugestões Rápidas:", style: GoogleFonts.poppins(fontSize: 14, color: Colors.grey)),
+                        Text("Sugestões para sua Dieta:", style: GoogleFonts.poppins(fontSize: 14, color: Colors.grey)),
                         if (prefs.dietFilters.isNotEmpty) Icon(Icons.check_circle, size: 16, color: AppColors.olive),
                       ],
                     ),
@@ -226,7 +335,7 @@ class _CreateTabState extends State<CreateTab> {
 
                   const SizedBox(height: 20),
 
-                  // --- BOTÃO GERAR ---
+                  // --- Botão Gerar ---
                   SizedBox(
                     height: 56,
                     child: ElevatedButton(
@@ -247,7 +356,7 @@ class _CreateTabState extends State<CreateTab> {
 
                   const SizedBox(height: 60),
 
-                  // --- COMO FUNCIONA (CORRIGIDO CONTRASTE) ---
+                  // --- SEÇÃO COMO FUNCIONA (MANTIDA) ---
                   Text("Como o BiteWise funciona?", style: GoogleFonts.poppins(fontSize: 20, fontWeight: FontWeight.bold, color: cs.onSurface)),
                   const SizedBox(height: 20),
                   SizedBox(
@@ -267,7 +376,7 @@ class _CreateTabState extends State<CreateTab> {
 
                   const SizedBox(height: 60),
 
-                  // --- PREMIUM E APK ---
+                  // --- PREMIUM E DOWNLOAD ---
                   ValueListenableBuilder<bool>(
                       valueListenable: planNotifier,
                       builder: (context, isPremium, _) {
@@ -281,10 +390,56 @@ class _CreateTabState extends State<CreateTab> {
                                   child: Container(padding: const EdgeInsets.all(24), decoration: BoxDecoration(color: AppColors.coffee, borderRadius: BorderRadius.circular(24)), child: Row(children: [Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Container(padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4), decoration: BoxDecoration(color: AppColors.terracotta, borderRadius: BorderRadius.circular(8)), child: Text("OFERTA ESPECIAL", style: GoogleFonts.poppins(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.white))), const SizedBox(height: 12), Text("Seja Premium", style: GoogleFonts.poppins(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.white)), const SizedBox(height: 4), Text("Receitas ilimitadas e cardápios semanais.", style: GoogleFonts.poppins(color: Colors.white70, fontSize: 13))])), Container(width: 50, height: 50, decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle), child: Icon(Icons.arrow_forward, color: AppColors.coffee))])),
                                 ),
                               ),
+
+                            // SEÇÃO DOWNLOAD (COM O MOCKUP DE CELULAR QUE VOCÊ GOSTOU)
                             Container(
                               padding: const EdgeInsets.all(24),
-                              decoration: BoxDecoration(color: cs.surface, borderRadius: BorderRadius.circular(24), border: Border.all(color: cs.primary.withOpacity(0.1)), boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 15, offset: const Offset(0, 5))]),
-                              child: Row(children: [Container(width: 70, height: 130, decoration: BoxDecoration(color: Colors.black, borderRadius: BorderRadius.circular(12), boxShadow: [BoxShadow(color: Colors.black26, blurRadius: 8, offset: Offset(2, 4))]), padding: const EdgeInsets.all(3), child: Container(decoration: BoxDecoration(color: AppColors.sand, borderRadius: BorderRadius.circular(9)), child: Center(child: Image.asset('assets/images/logo.png', height: 30, fit: BoxFit.contain)))), const SizedBox(width: 24), Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text("Leve o BiteWise", style: GoogleFonts.poppins(fontSize: 18, fontWeight: FontWeight.bold, color: cs.primary)), const SizedBox(height: 4), Text("Tenha a experiência completa no seu Android.", style: GoogleFonts.poppins(color: cs.onSurface.withOpacity(0.7), fontSize: 13)), const SizedBox(height: 16), SizedBox(width: double.infinity, child: OutlinedButton.icon(onPressed: () => _showDownloadModal(context), style: OutlinedButton.styleFrom(side: const BorderSide(color: AppColors.terracotta), foregroundColor: AppColors.terracotta, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10))), icon: const Icon(Icons.download_rounded, size: 20), label: const Text("BAIXAR APK")))]))]),
+                              decoration: BoxDecoration(
+                                  color: cs.surface,
+                                  borderRadius: BorderRadius.circular(24),
+                                  border: Border.all(color: cs.primary.withOpacity(0.1)),
+                                  boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 15, offset: const Offset(0, 5))]
+                              ),
+                              child: Row(
+                                  children: [
+                                    // Mockup
+                                    Container(
+                                        width: 70, height: 130,
+                                        decoration: BoxDecoration(color: Colors.black, borderRadius: BorderRadius.circular(12), boxShadow: [BoxShadow(color: Colors.black26, blurRadius: 8, offset: Offset(2, 4))]),
+                                        padding: const EdgeInsets.all(3),
+                                        child: Container(
+                                            decoration: BoxDecoration(color: AppColors.sand, borderRadius: BorderRadius.circular(9)),
+                                            child: Center(child: Image.asset('assets/images/logo.png', height: 30, fit: BoxFit.contain))
+                                        )
+                                    ),
+                                    const SizedBox(width: 24),
+                                    // Texto + Botão
+                                    Expanded(
+                                        child: Column(
+                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            children: [
+                                              Text("Leve o BiteWise", style: GoogleFonts.poppins(fontSize: 18, fontWeight: FontWeight.bold, color: cs.primary)),
+                                              const SizedBox(height: 4),
+                                              Text("Tenha suas receitas sempre à mão.", style: GoogleFonts.poppins(color: cs.onSurface.withOpacity(0.7), fontSize: 13)),
+                                              const SizedBox(height: 16),
+                                              SizedBox(
+                                                  width: double.infinity,
+                                                  child: OutlinedButton.icon(
+                                                      onPressed: () => _showDownloadModal(context), // Chama o modal inteligente
+                                                      style: OutlinedButton.styleFrom(
+                                                          side: const BorderSide(color: AppColors.terracotta),
+                                                          foregroundColor: AppColors.terracotta,
+                                                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10))
+                                                      ),
+                                                      icon: const Icon(Icons.download_rounded, size: 20),
+                                                      label: const Text("BAIXAR APK")
+                                                  )
+                                              )
+                                            ]
+                                        )
+                                    )
+                                  ]
+                              ),
                             ),
                           ],
                         );
@@ -304,23 +459,8 @@ class _CreateTabState extends State<CreateTab> {
     return Container(
       width: 160,
       padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: cs.surface,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: isDark ? Colors.grey.withOpacity(0.2) : Colors.transparent),
-        boxShadow: [if (!isDark) BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 15, offset: const Offset(0, 5))],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // AQUI ESTÁ A CORREÇÃO DE CONTRASTE (Opacity 0.5)
-          Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [Container(padding: const EdgeInsets.all(8), decoration: BoxDecoration(color: accentColor.withOpacity(0.1), shape: BoxShape.circle), child: Icon(icon, color: accentColor, size: 20)), Text(number, style: GoogleFonts.poppins(fontSize: 24, fontWeight: FontWeight.w900, color: cs.primary.withOpacity(0.5)))]),
-          const Spacer(),
-          Text(title, style: GoogleFonts.poppins(fontWeight: FontWeight.bold, fontSize: 15, color: cs.onSurface)),
-          const SizedBox(height: 4),
-          Text(desc, style: GoogleFonts.poppins(fontSize: 12, color: cs.onSurface.withOpacity(0.6), height: 1.4)),
-        ],
-      ),
+      decoration: BoxDecoration(color: cs.surface, borderRadius: BorderRadius.circular(20), border: Border.all(color: isDark ? Colors.grey.withOpacity(0.2) : Colors.transparent), boxShadow: [if (!isDark) BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 15, offset: const Offset(0, 5))]),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [Container(padding: const EdgeInsets.all(8), decoration: BoxDecoration(color: accentColor.withOpacity(0.1), shape: BoxShape.circle), child: Icon(icon, color: accentColor, size: 20)), Text(number, style: GoogleFonts.poppins(fontSize: 24, fontWeight: FontWeight.w900, color: cs.primary.withOpacity(0.4)))]), const Spacer(), Text(title, style: GoogleFonts.poppins(fontWeight: FontWeight.bold, fontSize: 15, color: cs.onSurface)), const SizedBox(height: 4), Text(desc, style: GoogleFonts.poppins(fontSize: 12, color: cs.onSurface.withOpacity(0.6), height: 1.4))]),
     );
   }
 }
